@@ -1,0 +1,86 @@
+[
+  {
+    "nombreEjercicio": "Sentadillas",
+    "repeticiones": 12,
+    "series": 3,
+    "descripcion": "Coloca los pies a la altura de los hombros, baja controladamente hasta que tus muslos estén paralelos al suelo y sube con fuerza sin bloquear las rodillas.",
+    "tipoEjercicio": "Pierna"
+  },
+  {
+    "nombreEjercicio": "Zancadas",
+    "repeticiones": 10,
+    "series": 3,
+    "descripcion": "Da un paso hacia adelante manteniendo la espalda recta, baja controladamente hasta que la rodilla trasera casi toque el suelo y vuelve a la posición inicial.",
+    "tipoEjercicio": "Pierna"
+  },
+  {
+    "nombreEjercicio": "Prensa de pierna",
+    "repeticiones": 10,
+    "series": 4,
+    "descripcion": "Siéntate en la máquina, coloca los pies a la altura de los hombros y empuja el peso sin bloquear las rodillas, regresando controladamente.",
+    "tipoEjercicio": "Pierna"
+  },
+  {
+    "nombreEjercicio": "Press banca",
+    "repeticiones": 10,
+    "series": 4,
+    "descripcion": "Acostado en el banco, baja la barra hasta el pecho controladamente y empuja hacia arriba sin bloquear los codos.",
+    "tipoEjercicio": "Pecho"
+  },
+  {
+    "nombreEjercicio": "Aperturas con mancuernas",
+    "repeticiones": 12,
+    "series": 3,
+    "descripcion": "Con mancuernas en cada mano y acostado en un banco, abre los brazos hasta sentir un estiramiento en el pecho y regresa controladamente al centro.",
+    "tipoEjercicio": "Pecho"
+  },
+  {
+    "nombreEjercicio": "Fondos en paralelas",
+    "repeticiones": 8,
+    "series": 3,
+    "descripcion": "Mantén los brazos rectos, baja controladamente hasta que los codos formen un ángulo de 90 grados y sube con fuerza.",
+    "tipoEjercicio": "Pecho"
+  },
+  {
+    "nombreEjercicio": "Jalón al pecho",
+    "repeticiones": 10,
+    "series": 3,
+    "descripcion": "Siéntate en la máquina, agarra la barra con un agarre ancho, lleva la barra hacia el pecho controladamente y regresa lentamente.",
+    "tipoEjercicio": "Espalda"
+  },
+  {
+    "nombreEjercicio": "Remo con barra",
+    "repeticiones": 12,
+    "series": 4,
+    "descripcion": "Con una barra frente a ti, inclina el torso hacia adelante y lleva la barra hacia el abdomen controlando el movimiento.",
+    "tipoEjercicio": "Espalda"
+  },
+  {
+    "nombreEjercicio": "Peso muerto",
+    "repeticiones": 8,
+    "series": 4,
+    "descripcion": "Con los pies a la altura de los hombros, levanta la barra desde el suelo manteniendo la espalda recta y usando principalmente las caderas y piernas.",
+    "tipoEjercicio": "Espalda"
+  },
+  {
+    "nombreEjercicio": "Curl bíceps con barra",
+    "repeticiones": 10,
+    "series": 3,
+    "descripcion": "Sujeta la barra con las palmas hacia arriba, flexiona los codos sin balancear el cuerpo y baja controladamente.",
+    "tipoEjercicio": "Brazo"
+  },
+  {
+    "nombreEjercicio": "Curl martillo con mancuernas",
+    "repeticiones": 12,
+    "series": 3,
+    "descripcion": "Sujeta las mancuernas con las palmas enfrentadas, flexiona los codos para llevar el peso hacia los hombros y baja lentamente.",
+    "tipoEjercicio": "Brazo"
+  },
+  {
+    "nombreEjercicio": "Fondos de tríceps en banco",
+    "repeticiones": 12,
+    "series": 3,
+    "descripcion": "Con las manos en el borde del banco y los pies apoyados en el suelo, baja el cuerpo controladamente doblando los codos y empuja hacia arriba.",
+    "tipoEjercicio": "Brazo"
+  }
+]
