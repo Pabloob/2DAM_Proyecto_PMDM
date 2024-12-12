@@ -1,34 +1,52 @@
-package com.example.fitcraft.ventanas
+package com.example.fitcraft.ui.screen
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.fitcraft.conexiones.ConexionPersona
-import com.example.fitcraft.*
-import com.example.fitcraft.clases.Usuario
+import com.example.fitcraft.data.firebase.ConexionPersona
+import com.example.fitcraft.data.model.Usuario
+import com.example.fitcraft.ui.components.CampoTexto
+import com.example.fitcraft.ui.components.ClickableRow
+import com.example.fitcraft.ui.components.PanelNavegacionInferior
+import com.example.fitcraft.ui.components.TextoCentrado
 import com.example.fitcraft.ui.theme.ColorError
 import com.example.fitcraft.ui.theme.ColorFondo
 import com.example.fitcraft.ui.theme.ColorFondoSecundario
 import com.example.fitcraft.ui.theme.ColorTitulo
+import com.example.fitcraft.viewmodel.UsuarioLogeado
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) {
-    val conexionPersona = remember { ConexionPersona() } // Instancia de conexión para manejar usuarios
+fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
+    val conexionPersona =
+        remember { ConexionPersona() }
     val context = LocalContext.current
 
     // Inicializamos las variables con el usuario actual
-    val usuarioActual = datosPersistentes.usuarioActual
+    val usuarioActual = usuarioLogeado.usuarioActual
     var nombreUsuario by remember { mutableStateOf(usuarioActual?.nombreUsuario ?: "") }
     var auxAltura by remember { mutableStateOf(usuarioActual?.altura?.toString() ?: "") }
     var auxPeso by remember { mutableStateOf(usuarioActual?.peso?.toString() ?: "") }
@@ -75,7 +93,7 @@ fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) 
                         value = nombreUsuario,
                         onValueChange = { nombreUsuario = it },
                         placeholder = "Nombre",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
                 Row(
@@ -88,7 +106,7 @@ fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) 
                         value = auxPeso,
                         onValueChange = { auxPeso = it },
                         placeholder = "Peso",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
                 Row(
@@ -101,7 +119,7 @@ fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) 
                         value = auxAltura,
                         onValueChange = { auxAltura = it },
                         placeholder = "Altura",
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
@@ -111,8 +129,21 @@ fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) 
                     text = "Cerrar sesión",
                     color = ColorError,
                     onClick = {
-                        datosPersistentes.usuarioActual = null // Limpiar usuario actual
-                        navController.navigate("VentanaIniciarSesion")
+                        FirebaseAuth.getInstance().signOut() // Cierra sesión en Firebase
+                        usuarioLogeado.cerrarSesion() // Limpia los datos persistentes
+
+                        // Limpia la sesión local
+                        val sharedPreferences =
+                            context.getSharedPreferences("FitCraftPrefs", Context.MODE_PRIVATE)
+                        with(sharedPreferences.edit()) {
+                            remove("uid")
+                            apply()
+                        }
+
+                        // Redirige a la pantalla de inicio de sesión
+                        navController.navigate("VentanaIniciarSesion") {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 )
 
@@ -121,12 +152,24 @@ fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) 
                     color = ColorError,
                     onClick = {
                         usuarioActual?.let { usuario ->
-                            conexionPersona.borrarUsuarioPorNombre(usuario.nombreUsuario) { exito ->
+                            conexionPersona.borrarUsuarioPorId(usuario) { exito ->
                                 if (exito) {
+                                    usuarioLogeado.cerrarSesion()
+                                    val sharedPreferences = context.getSharedPreferences(
+                                        "FitCraftPrefs",
+                                        Context.MODE_PRIVATE
+                                    )
+                                    with(sharedPreferences.edit()) {
+                                        clear()
+                                        apply()
+                                    }
+
+                                    // Redirige a la pantalla de inicio de sesión
                                     Toast.makeText(context, "Cuenta eliminada", Toast.LENGTH_SHORT)
                                         .show()
-                                    datosPersistentes.usuarioActual = null
-                                    navController.navigate("VentanaIniciarSesion")
+                                    navController.navigate("VentanaIniciarSesion") {
+                                        popUpTo(0) { inclusive = true }
+                                    }
                                 } else {
                                     Toast.makeText(
                                         context,
@@ -139,13 +182,6 @@ fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) 
                     }
                 )
 
-                ClickableRow(
-                    text = "Borrar otra cuenta",
-                    color = ColorError,
-                    onClick = {
-                        navController.navigate("VentanaBorrarCuentas")
-                    }
-                )
             }
         }
 
@@ -154,18 +190,4 @@ fun Ajustes(navController: NavController, datosPersistentes: DatosPersistentes) 
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
-}
-
-@Preview
-@Composable
-private fun AjustesPreview() {
-    val navController = rememberNavController()
-    val datosPersistentes = DatosPersistentes().apply {
-        usuarioActual = Usuario(
-            nombreUsuario = "usuarioPrueba",
-            altura = 170.0,
-            peso = 70.0
-        )
-    }
-    Ajustes(navController = navController, datosPersistentes = datosPersistentes)
 }

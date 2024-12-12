@@ -1,4 +1,4 @@
-package com.example.fitcraft.clases
+package com.example.fitcraft.data.model
 
 data class Rutina(
     val idPersona: Int = 0,
