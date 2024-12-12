@@ -161,11 +161,10 @@ fun SeleccionarDia(datosRutina: DatosRutina) {
     // Mostrar los días seleccionados
     OutlinedTextField(
         colors = OutlinedTextFieldDefaults.colors(
-            unfocusedTextColor = ColorTexto,
-            focusedTextColor = ColorTexto,
-            unfocusedContainerColor = Color.Transparent,
-            focusedContainerColor = Color.Transparent,
-            unfocusedBorderColor = Color.White,
+            disabledTextColor = ColorTexto,
+            disabledBorderColor = ColorTexto,
+            disabledLeadingIconColor = ColorTexto,
+            disabledContainerColor = Color.Transparent
         ),
         value = datosRutina.diaRutina.joinToString(", "),
         onValueChange = {},
@@ -250,11 +249,10 @@ fun SeleccionarHora(
 
     OutlinedTextField(
         colors = OutlinedTextFieldDefaults.colors(
-            unfocusedTextColor = ColorTexto,
-            focusedTextColor = ColorTexto,
-            unfocusedContainerColor = Color.Transparent,
-            focusedContainerColor = Color.Transparent,
-            unfocusedBorderColor = Color.White,
+            disabledTextColor = ColorTexto,
+            disabledBorderColor = ColorTexto,
+            disabledLeadingIconColor = ColorTexto,
+            disabledContainerColor = Color.Transparent
         ),
         value = horaSeleccionada,
         onValueChange = {},
@@ -263,7 +261,8 @@ fun SeleccionarHora(
             .clickable { timePickerDialog.show() },
         placeholder = {
             Text(
-                text = if (horaSeleccionada.isEmpty()) "Seleccionar hora" else ""
+                text = if (horaSeleccionada.isEmpty()) "Hora" else "",
+                color = ColorTexto
             )
         },
         leadingIcon = {

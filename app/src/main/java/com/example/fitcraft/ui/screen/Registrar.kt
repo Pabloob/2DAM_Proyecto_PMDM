@@ -26,7 +26,6 @@ import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -45,7 +44,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -66,7 +64,6 @@ import com.example.fitcraft.ui.theme.ColorFondoSecundario
 import com.example.fitcraft.ui.theme.ColorTexto
 import com.example.fitcraft.ui.theme.ColorTitulo
 import com.example.fitcraft.ui.theme.FitCraftTheme
-import com.example.fitcraft.ui.theme.esquina25
 import com.example.fitcraft.viewmodel.DatosRutina
 import com.example.fitcraft.viewmodel.UsuarioLogeado
 import java.util.Calendar
@@ -205,16 +202,6 @@ internal fun Registrar(navController: NavController) {
             DividerConEspaciado()
 
             OutlinedTextField(
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedTextColor = ColorTexto,
-                    focusedTextColor = ColorTexto,
-                    unfocusedBorderColor = Color.White,
-                    focusedBorderColor = Color.White,
-                    focusedLeadingIconColor = Color.White,
-                    unfocusedLeadingIconColor = Color.White
-                ),
                 value = fechaNacimiento,
                 onValueChange = {},
                 enabled = false,
@@ -226,11 +213,18 @@ internal fun Registrar(navController: NavController) {
                         imageVector = Icons.Rounded.DateRange, contentDescription = null
                     )
                 },
-                shape = esquina25,
+                shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .clickable { datePickerDialog.show() }
                     .fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = ColorTexto,
+                    disabledBorderColor = ColorTexto,
+                    disabledLeadingIconColor = ColorTexto,
+                    disabledContainerColor = Color.Transparent
+                )
             )
+
 
             DividerConEspaciado()
 
