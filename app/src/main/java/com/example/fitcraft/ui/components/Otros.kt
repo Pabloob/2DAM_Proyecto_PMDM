@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.fitcraft.R
-import com.example.fitcraft.data.firebase.procesarRutinasSemanal
 import com.example.fitcraft.data.model.Rutina
 import com.example.fitcraft.ui.theme.ColorCorrecto
 import com.example.fitcraft.ui.theme.ColorFondoSecundario
@@ -56,7 +56,7 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 
 @Composable
-fun DividerConEspaciado() {
+fun DividerConLinea() {
     HorizontalDivider(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,44 +65,53 @@ fun DividerConEspaciado() {
     )
 }
 
+
 @Composable
 fun LineChartComponent(lineData: LineData) {
-    AndroidView(
+    Box(
         modifier = Modifier
-            .padding(top = 30.dp)
-            .width(400.dp)
-            .height(200.dp),
-        factory = { context ->
-            LineChart(context).apply {
-                setTouchEnabled(true)
-                isDragEnabled = true
-                setScaleEnabled(false)
-                description.isEnabled = false
-                xAxis.position = XAxis.XAxisPosition.BOTTOM
-                xAxis.textColor = Color.White.toArgb()
-                xAxis.setDrawGridLines(false)
-                xAxis.valueFormatter = IndexAxisValueFormatter(
-                    listOf("Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom")
-                )
+            .fillMaxWidth()
+            .height(250.dp)
+            .padding(bottom = 32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        AndroidView(
+            modifier = Modifier
+                .width(400.dp)
+                .height(200.dp),
+            factory = { context ->
+                LineChart(context).apply {
+                    setTouchEnabled(true)
+                    isDragEnabled = true
+                    setScaleEnabled(false)
+                    description.isEnabled = false
+                    xAxis.position = XAxis.XAxisPosition.BOTTOM
+                    xAxis.textColor = Color.White.toArgb()
+                    xAxis.setDrawGridLines(false)
+                    xAxis.valueFormatter = IndexAxisValueFormatter(
+                        listOf("Lun", "Mar", "Mie", "Jue", "Vie", "Sab", "Dom")
+                    )
 
-                axisLeft.textColor = Color.White.toArgb()
-                axisLeft.setDrawGridLines(true)
-                axisLeft.axisMinimum = 0f
-                axisLeft.axisMaximum = 6f
-                axisLeft.valueFormatter = object : ValueFormatter() {
-                    override fun getFormattedValue(value: Float): String {
-                        return "${value.toInt()}h"
+                    axisLeft.textColor = Color.White.toArgb()
+                    axisLeft.setDrawGridLines(true)
+                    axisLeft.axisMinimum = 0f
+                    axisLeft.axisMaximum = 6f
+                    axisLeft.valueFormatter = object : ValueFormatter() {
+                        override fun getFormattedValue(value: Float): String {
+                            return "${value.toInt()}h"
+                        }
                     }
+
+                    axisRight.isEnabled = false
+                    legend.isEnabled = false
+
+                    data = lineData
+                    animateX(1500)
                 }
-
-                axisRight.isEnabled = false
-                legend.isEnabled = false
-
-                data = lineData
-                animateX(1500)
             }
-        }
-    )
+        )
+    }
+
 }
 
 
@@ -166,12 +175,12 @@ fun SeleccionarDia(datosRutina: DatosRutina) {
             disabledLeadingIconColor = ColorTexto,
             disabledContainerColor = Color.Transparent
         ),
-        value = datosRutina.diaRutina.joinToString(", "),
+        value = datosRutina.dias.joinToString(", "),
         onValueChange = {},
         enabled = false,
         placeholder = {
             Text(
-                text = if (datosRutina.diaRutina.isEmpty()) "Seleccionar día" else "",
+                text = if (datosRutina.dias.isEmpty()) "Seleccionar día" else "",
                 color = ColorTexto
             )
         },
@@ -205,7 +214,7 @@ fun SeleccionarDia(datosRutina: DatosRutina) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(text = dia, color = ColorTexto)
-                            if (diaEnMinusculas in datosRutina.diaRutina) {
+                            if (diaEnMinusculas in datosRutina.dias) {
                                 Icon(
                                     imageVector = Icons.Rounded.Check,
                                     contentDescription = "Seleccionado",
@@ -215,12 +224,76 @@ fun SeleccionarDia(datosRutina: DatosRutina) {
                         }
                     },
                     onClick = {
-                        if (diaEnMinusculas in datosRutina.diaRutina) {
-                            datosRutina.diaRutina.remove(diaEnMinusculas)
+                        if (diaEnMinusculas in datosRutina.dias) {
+                            datosRutina.dias.remove(diaEnMinusculas)
                         } else {
-                            datosRutina.diaRutina.add(diaEnMinusculas)
+                            datosRutina.dias.add(diaEnMinusculas)
                         }
                         expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SeleccionarDiaEditable(
+    rutina: Rutina,
+    onActualizarDias: (List<String>) -> Unit,
+    clickable: Boolean
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val diasDisponibles =
+        listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
+    val diasSeleccionados = remember { rutina.dias.toMutableList() }
+
+    // Mostrar los días seleccionados
+    CampoTextoEditable(
+        value = diasSeleccionados.joinToString(", "),
+        onValueChange = {},
+        enabled = false,
+        placeholder = if (diasSeleccionados.isEmpty()) "Seleccionar día" else "",
+        modifier = Modifier.then(
+            if (clickable) Modifier.clickable { expanded = !expanded } else Modifier
+        )
+    )
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .heightIn(max = 200.dp)
+                .background(ColorFondoSecundario)
+        ) {
+            diasDisponibles.forEach { dia ->
+                DropdownMenuItem(
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(text = dia, color = ColorTexto)
+                            if (dia in diasSeleccionados) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Check,
+                                    contentDescription = "Seleccionado",
+                                    tint = ColorCorrecto
+                                )
+                            }
+                        }
+                    },
+                    onClick = {
+                        if (clickable) { // Verificar si es clicable antes de permitir interacción
+                            if (dia in diasSeleccionados) {
+                                diasSeleccionados.remove(dia)
+                            } else {
+                                diasSeleccionados.add(dia)
+                            }
+                            onActualizarDias(diasSeleccionados)
+                            expanded = false
+                        }
                     }
                 )
             }
@@ -274,4 +347,42 @@ fun SeleccionarHora(
         },
         shape = esquina25,
     )
+}
+
+fun procesarRutinasSemanal(
+    rutinas: List<Rutina>
+): List<Float> {
+    val tiemposPorDia = mutableMapOf(
+        "lunes" to 0f, "martes" to 0f, "miércoles" to 0f,
+        "jueves" to 0f, "viernes" to 0f, "sábado" to 0f, "domingo" to 0f
+    )
+
+    for (rutina in rutinas) {
+        rutina.dias.forEach { dia ->
+            val inicio = convertirHoraAFloat(rutina.horaInicio)
+            val fin = convertirHoraAFloat(rutina.horaFin)
+            val tiempo = fin - inicio
+            tiemposPorDia[dia.lowercase()] =
+                tiemposPorDia.getOrDefault(dia.lowercase(), 0f) + tiempo
+        }
+    }
+
+    return listOf(
+        tiemposPorDia["lunes"] ?: 0f,
+        tiemposPorDia["martes"] ?: 0f,
+        tiemposPorDia["miércoles"] ?: 0f,
+        tiemposPorDia["jueves"] ?: 0f,
+        tiemposPorDia["viernes"] ?: 0f,
+        tiemposPorDia["sábado"] ?: 0f,
+        tiemposPorDia["domingo"] ?: 0f
+    )
+}
+
+fun convertirHoraAFloat(hora: String): Float {
+    val partes = hora.split(":")
+    return if (partes.size == 2) {
+        partes[0].toFloat() + partes[1].toFloat() / 60
+    } else {
+        0f
+    }
 }

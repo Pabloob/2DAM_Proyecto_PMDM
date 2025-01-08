@@ -57,16 +57,22 @@ class ConexionRutina {
     fun borrarRutina(idPersona: Int, rutinaId: String, callback: (Boolean) -> Unit) {
         rutinasRef.child(idPersona.toString()).child(rutinaId).removeValue()
             .addOnCompleteListener { task ->
-                callback(task.isSuccessful)
+                if (task.isSuccessful) {
+                    callback(true) // Rutina eliminada con éxito
+                } else {
+                    callback(false) // Error durante la eliminación
+                }
             }.addOnFailureListener {
                 it.printStackTrace()
-                callback(false)
+                callback(false) // Error durante la eliminación
             }
     }
 
+
+
     // Actualizar una rutina existente
     fun actualizarRutina(idPersona: Int, rutina: Rutina, callback: (Boolean) -> Unit) {
-        val rutinaId = rutina.idRutina.toString() // Usar idRutina como clave
+        val rutinaId = rutina.idRutina.toString()
         rutinasRef.child(idPersona.toString()).child(rutinaId).setValue(rutina)
             .addOnCompleteListener { task ->
                 callback(task.isSuccessful)

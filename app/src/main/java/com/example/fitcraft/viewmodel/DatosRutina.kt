@@ -7,20 +7,30 @@ import androidx.lifecycle.ViewModel
 import com.example.fitcraft.data.model.Ejercicio
 
 class DatosRutina : ViewModel() {
+    var idRutina = mutableStateOf(0)
     var nombreRutina = mutableStateOf("")
     var descripcionRutina = mutableStateOf("")
     var horaInicio = mutableStateOf("")
     var horaFin = mutableStateOf("")
-    val ejerciciosSeleccionados = mutableListOf<Ejercicio>()
-    val seriesYRepeticiones = mutableStateMapOf<Ejercicio, Pair<String, String>>()
-    var diaRutina = mutableStateListOf<String>()
+    var dias = mutableStateListOf<String>()
+    val ejercicios = mutableStateListOf<Ejercicio>()
+
+    val datosEjercicio = mutableStateMapOf<Ejercicio, EjercicioValores>()
 
     fun resetearDatos() {
+        idRutina.value = 0
         nombreRutina.value = ""
         descripcionRutina.value = ""
         horaInicio.value = ""
         horaFin.value = ""
-        ejerciciosSeleccionados.clear()
-        seriesYRepeticiones.clear()
+        ejercicios.clear()
+        dias.clear()
+        datosEjercicio.clear()
     }
 }
+
+data class EjercicioValores(
+    val series: String = "",
+    val repeticiones: String = "",
+    val rir: String = ""
+)

@@ -19,32 +19,11 @@ import com.example.fitcraft.ui.theme.ColorTextoBoton
 fun Boton(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 32.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = ColorBoton,
-            contentColor = ColorTextoBoton
-        )
-    ) {
-        Text(text)
-    }
-}
-
-@Composable
-fun Boton2(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-            .padding(top = 32.dp),
+        modifier = modifier,
         colors = ButtonDefaults.buttonColors(
             containerColor = ColorBoton,
             contentColor = ColorTextoBoton

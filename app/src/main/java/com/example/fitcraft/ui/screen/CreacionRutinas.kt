@@ -4,29 +4,27 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -35,7 +33,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.fitcraft.R
 import com.example.fitcraft.data.firebase.ConexionRutina
-import com.example.fitcraft.data.model.Ejercicio
 import com.example.fitcraft.data.model.Rutina
 import com.example.fitcraft.ui.NavegadorVentanas
 import com.example.fitcraft.ui.components.Boton
@@ -45,11 +42,12 @@ import com.example.fitcraft.ui.components.SeleccionarDia
 import com.example.fitcraft.ui.components.SeleccionarHora
 import com.example.fitcraft.ui.components.TextoCentrado
 import com.example.fitcraft.ui.theme.ColorError
-import com.example.fitcraft.ui.theme.ColorFondo
-import com.example.fitcraft.ui.theme.ColorFondoSecundario
 import com.example.fitcraft.ui.theme.ColorTitulo
 import com.example.fitcraft.ui.theme.FitCraftTheme
+import com.example.fitcraft.ui.theme.modifierBox
+import com.example.fitcraft.ui.theme.modifierColumna
 import com.example.fitcraft.viewmodel.DatosRutina
+import com.example.fitcraft.viewmodel.EjercicioValores
 import com.example.fitcraft.viewmodel.UsuarioLogeado
 
 class VentanaCrearRutina : ComponentActivity() {
@@ -71,26 +69,22 @@ class VentanaCrearRutina : ComponentActivity() {
 
 @Composable
 fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRutina: DatosRutina) {
-    var errorMensaje by remember { mutableStateOf("") }
+    var errorMensaje by rememberSaveable { mutableStateOf("") }
     val conexionRutinas = ConexionRutina()
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ColorFondo),
+        modifierBox,
         contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .clip(RoundedCornerShape(50.dp))
-                .background(ColorFondoSecundario)
-                .padding(30.dp)
+            modifierColumna.verticalScroll(rememberScrollState())
+
         ) {
             TextoCentrado("Crear Rutina", color = ColorTitulo)
 
             Spacer(Modifier.height(16.dp))
 
+            // Campo para el nombre de la rutina
             CampoTexto(
                 value = datosRutina.nombreRutina.value,
                 onValueChange = { datosRutina.nombreRutina.value = it },
@@ -107,11 +101,10 @@ fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRuti
 
             Spacer(Modifier.height(16.dp))
 
+            // Campo para la descripción de la rutina
             CampoTexto(
                 value = datosRutina.descripcionRutina.value,
-                onValueChange = {
-                    datosRutina.descripcionRutina.value = it
-                }, // Actualización directa
+                onValueChange = { datosRutina.descripcionRutina.value = it },
                 placeholder = "Descripción",
                 leadingIcon = {
                     Icon(
@@ -125,10 +118,12 @@ fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRuti
 
             Spacer(Modifier.height(16.dp))
 
+            // Selección de días
             SeleccionarDia(datosRutina = datosRutina)
 
             Spacer(Modifier.height(16.dp))
 
+            // Selección de horas
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -150,73 +145,83 @@ fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRuti
 
             Spacer(Modifier.height(16.dp))
 
-            datosRutina.ejerciciosSeleccionados.forEach { ejercicio ->
-                val series = datosRutina.seriesYRepeticiones[ejercicio]?.first ?: ""
-                val repeticiones = datosRutina.seriesYRepeticiones[ejercicio]?.second ?: ""
+            datosRutina.ejercicios.forEach { ejercicio ->
+                val valoresEjercicio =
+                    datosRutina.datosEjercicio[ejercicio] ?: EjercicioValores("", "", "")
 
                 CartaEjercicioAnadido(
                     ejercicio = ejercicio,
-                    series = series,
-                    repeticiones = repeticiones,
+                    series = valoresEjercicio.series,
+                    repeticiones = valoresEjercicio.repeticiones,
+                    rir = valoresEjercicio.rir,
                     onSeriesChange = { newSeries ->
-                        datosRutina.seriesYRepeticiones[ejercicio] =
-                            newSeries to datosRutina.seriesYRepeticiones[ejercicio]?.second.orEmpty()
+                        datosRutina.datosEjercicio[ejercicio] =
+                            valoresEjercicio.copy(series = newSeries)
                     },
                     onRepeticionesChange = { newRepeticiones ->
-                        datosRutina.seriesYRepeticiones[ejercicio] =
-                            datosRutina.seriesYRepeticiones[ejercicio]?.first.orEmpty() to newRepeticiones
+                        datosRutina.datosEjercicio[ejercicio] =
+                            valoresEjercicio.copy(repeticiones = newRepeticiones)
+                    },
+                    onRirChange = { newRir ->
+                        datosRutina.datosEjercicio[ejercicio] =
+                            valoresEjercicio.copy(rir = newRir)
                     }
                 )
             }
 
-            Spacer(Modifier.height(16.dp))
 
-            Boton("Añadir Ejercicio", {
-                navController.navigate("VentanaEjercicios")
-            })
+
 
             Spacer(Modifier.height(16.dp))
 
-            Boton("Crear Rutina", {
-                if (datosRutina.nombreRutina.value.isEmpty() || datosRutina.ejerciciosSeleccionados.isEmpty()) {
-                    errorMensaje = "Por favor, completa todos los campos y añade ejercicios."
-                    return@Boton
-                }
+            // Botón para añadir un nuevo ejercicio
+            Boton(
+                text = "Añadir Ejercicio",
+                onClick = { navController.navigate("VentanaEjercicios") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                val nuevaRutina = Rutina(
-                    idRutina = System.currentTimeMillis().toInt(),
-                    idPersona = usuario.usuarioActual?.idPersona ?: 0,
-                    nombreRutina = datosRutina.nombreRutina.value,
-                    descripcion = datosRutina.descripcionRutina.value,
-                    dias = datosRutina.diaRutina,
-                    horaInicio = datosRutina.horaInicio.value,
-                    horaFin = datosRutina.horaFin.value,
-                    ejercicios = datosRutina.ejerciciosSeleccionados.map { ejercicio ->
-                        Ejercicio(
-                            nombreEjercicio = ejercicio.nombreEjercicio,
-                            repeticiones = datosRutina.seriesYRepeticiones[ejercicio]?.second?.toIntOrNull()
-                                ?: 0,
-                            series = datosRutina.seriesYRepeticiones[ejercicio]?.first?.toIntOrNull()
-                                ?: 0,
-                            descripcion = ejercicio.descripcion,
-                            tipoEjercicio = ejercicio.tipoEjercicio
-                        )
+            Spacer(Modifier.height(16.dp))
+
+            // Botón para crear la rutina
+            Boton(
+                text = "Crear Rutina",
+                onClick = {
+                    if (datosRutina.nombreRutina.value.isEmpty() || datosRutina.ejercicios.isEmpty()) {
+                        errorMensaje = "Por favor, completa todos los campos y añade ejercicios."
+                        return@Boton
                     }
-                )
 
-                conexionRutinas.agregarRutina(
-                    idPersona = usuario.usuarioActual?.idPersona ?: 0,
-                    nuevaRutina
-                ) { exito ->
-                    if (exito) {
-                        datosRutina.resetearDatos()
-                        navController.navigate("VentanaInicio")
-                    } else {
-                        errorMensaje = "Error al guardar la rutina. Intenta de nuevo."
+                    val nuevaRutina = Rutina(
+                        idRutina = System.currentTimeMillis().toInt(),
+                        idPersona = usuario.usuarioActual?.idPersona ?: 0,
+                        nombreRutina = datosRutina.nombreRutina.value,
+                        descripcion = datosRutina.descripcionRutina.value,
+                        dias = datosRutina.dias,
+                        horaInicio = datosRutina.horaInicio.value,
+                        horaFin = datosRutina.horaFin.value,
+                        ejercicios = datosRutina.ejercicios.map { ejercicio ->
+                            ejercicio.copy() // Crea una copia del objeto ejercicio
+                        }
+                    )
+
+                    // Guardar la rutina en Firebase
+                    conexionRutinas.agregarRutina(
+                        idPersona = usuario.usuarioActual?.idPersona ?: 0,
+                        nuevaRutina
+                    ) { exito ->
+                        if (exito) {
+                            datosRutina.resetearDatos()
+                            navController.navigate("VentanaInicio")
+                        } else {
+                            errorMensaje = "Error al guardar la rutina. Intenta de nuevo."
+                        }
                     }
-                }
-            })
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
 
+            // Mostrar mensaje de error si hay algún problema
             if (errorMensaje.isNotEmpty()) {
                 Text(
                     text = errorMensaje,
@@ -228,10 +233,15 @@ fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRuti
 
             Spacer(Modifier.height(16.dp))
 
-            Boton("Cancelar", {
-                navController.navigate("VentanaMisRutinas")
-                datosRutina.resetearDatos()
-            })
+            // Botón para cancelar y regresar
+            Boton(
+                text = "Cancelar",
+                onClick = {
+                    navController.navigate("VentanaMisRutinas")
+                    datosRutina.resetearDatos()
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

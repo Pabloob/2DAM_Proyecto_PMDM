@@ -2,10 +2,8 @@ package com.example.fitcraft.data.firebase
 
 import android.util.Log
 import com.example.fitcraft.data.model.Usuario
-import com.example.fitcraft.viewmodel.UsuarioLogeado
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import android.content.Context
 
 class ConexionPersona {
 
@@ -15,19 +13,6 @@ class ConexionPersona {
 
     companion object {
         private const val TAG = "ConexionPersona"
-    }
-
-    // Obtener usuario por nombre
-    fun obtenerUsuarioPorNombre(nombre: String, callback: (Usuario?) -> Unit) {
-        usuariosRef.orderByChild("nombreUsuario").equalTo(nombre).get()
-            .addOnSuccessListener { snapshot ->
-                val usuario =
-                    snapshot.children.mapNotNull { it.getValue(Usuario::class.java) }.firstOrNull()
-                callback(usuario)
-            }.addOnFailureListener { exception ->
-                Log.e(TAG, "Error al obtener usuario por nombre: ${exception.message}", exception)
-                callback(null)
-            }
     }
 
     // Borrar un usuario por idPersona
@@ -78,34 +63,6 @@ class ConexionPersona {
             }
     }
 
-    fun verificarSesionAutomatica(
-        context: Context,
-        usuarioLogeado: UsuarioLogeado,
-        callback: (Boolean, String?) -> Unit
-    ) {
-        val sharedPreferences = context.getSharedPreferences("FitCraftPrefs", Context.MODE_PRIVATE)
-        val uid = sharedPreferences.getString("UID", null)
-
-        if (uid != null) {
-            // Cargar datos del usuario desde Firebase Realtime Database
-            usuariosRef.child(uid).get()
-                .addOnSuccessListener { snapshot ->
-                    val usuario = snapshot.getValue(Usuario::class.java)
-                    if (usuario != null) {
-                        usuarioLogeado.usuarioActual = usuario
-                        callback(true, null) // Éxito
-                    } else {
-                        callback(false, "No se encontró información del usuario.")
-                    }
-                }
-                .addOnFailureListener {
-                    callback(false, it.localizedMessage)
-                }
-        } else {
-            callback(false, "")
-        }
-    }
-
     fun obtenerUsuarioPorUID(uid: String, callback: (Usuario?) -> Unit) {
         usuariosRef.child(uid).get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -122,4 +79,33 @@ class ConexionPersona {
         }
     }
 
+    fun actualizarUsuario(usuario: Usuario, callback: (Boolean) -> Unit) {
+        val usuariosRef = FirebaseDatabase.getInstance().getReference("usuarios")
+
+        usuariosRef.child(usuario.idPersona.toString()).setValue(usuario)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    callback(true) // Actualización exitosa
+                } else {
+                    callback(false) // Error durante la actualización
+                }
+            }
+    }
+
+
+    fun validarRegistro(
+        nombre: String,
+        apellidos: String,
+        email: String,
+        fechaNacimiento: String,
+        altura: Float,
+        peso: Float,
+        nombreUsuario: String,
+        contrasena: String
+    ): Boolean {
+        return nombre.isNotEmpty() && apellidos.isNotEmpty() &&
+                fechaNacimiento.isNotEmpty() && email.isNotEmpty() && altura > 0 &&
+                peso > 0 && nombreUsuario.isNotEmpty() &&
+                contrasena.isNotEmpty()
+    }
 }

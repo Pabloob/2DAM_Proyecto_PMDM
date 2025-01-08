@@ -4,33 +4,27 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -48,10 +42,9 @@ import com.example.fitcraft.ui.components.CampoTextoConContrasena
 import com.example.fitcraft.ui.components.TextoCentrado
 import com.example.fitcraft.ui.components.TextoInteractivo
 import com.example.fitcraft.ui.theme.ColorError
-import com.example.fitcraft.ui.theme.ColorFondo
-import com.example.fitcraft.ui.theme.ColorFondoSecundario
 import com.example.fitcraft.ui.theme.ColorTitulo
-import com.example.fitcraft.ui.theme.esquina50
+import com.example.fitcraft.ui.theme.modifierBox
+import com.example.fitcraft.ui.theme.modifierColumna
 import com.example.fitcraft.viewmodel.DatosRutina
 import com.example.fitcraft.viewmodel.UsuarioLogeado
 import kotlinx.coroutines.flow.launchIn
@@ -77,156 +70,117 @@ class VentanaPrincipal : ComponentActivity() {
 
 @Composable
 fun IniciarSesion(navController: NavController, usuarioLogeado: UsuarioLogeado) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMensaje by remember { mutableStateOf("") }
-    var cargando by remember { mutableStateOf(true) }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
+    var errorMensaje by rememberSaveable { mutableStateOf("") }
 
-    val context = LocalContext.current
-    val inicioSesionFirebase = remember { InicioSesionFirebase(context) }
+    val inicioSesionFirebase = remember { InicioSesionFirebase() }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        inicioSesionFirebase.verificarSesionActiva()
-            .onEach { response ->
-                when (response) {
-                    is InicioSesionFirebase.AuthResponse.Success -> {
-                        ConexionPersona().obtenerUsuarioPorUID(response.uid) { usuario ->
-                            if (usuario != null) {
-                                usuarioLogeado.usuarioActual = usuario
-                                navController.navigate("VentanaInicio") {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            } else {
-                                cargando = false
-                            }
-                        }
-                    }
-
-                    is InicioSesionFirebase.AuthResponse.Error -> {
-                        cargando = false
-                    }
-                }
-            }
-            .launchIn(coroutineScope)
-    }
-
-
-    if (cargando) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+    Box(
+        modifierBox,
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifierColumna
+                .verticalScroll(rememberScrollState()),
         ) {
-            CircularProgressIndicator()
-        }
-    } else {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(ColorFondo),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .clip(esquina50)
-                    .background(ColorFondoSecundario)
-                    .padding(30.dp)
-            ) {
-                TextoCentrado(
-                    text = stringResource(id = R.string.app_name),
-                    style = TextStyle(
-                        fontSize = 75.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    modifier = Modifier,
-                    color = ColorTitulo
-                )
+            TextoCentrado(
+                text = stringResource(id = R.string.app_name),
+                style = TextStyle(
+                    fontSize = 75.sp,
+                    fontWeight = FontWeight.Bold
+                ),
+                color = ColorTitulo
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                CampoTexto(
-                    value = email,
-                    onValueChange = {
-                        email = it
-                        errorMensaje = ""
-                    },
-                    placeholder = "E-mail",
-                    leadingIcon = {
-                        Icon(imageVector = Icons.Rounded.Email, contentDescription = null)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
+            // Campo de texto para el email
+            CampoTexto(
+                value = email,
+                onValueChange = {
+                    email = it
+                    errorMensaje = ""
+                },
+                placeholder = "E-mail",
+                leadingIcon = {
+                    Icon(imageVector = Icons.Rounded.Email, contentDescription = null)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                CampoTextoConContrasena(
-                    value = password,
-                    onValueChange = {
-                        password = it
-                        errorMensaje = ""
-                    },
-                    placeholder = "Contraseña",
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Rounded.Lock,
-                            contentDescription = null
-                        )
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                if (errorMensaje.isNotEmpty()) {
-                    Text(
-                        text = errorMensaje,
-                        color = ColorError,
-                        style = TextStyle(fontSize = 14.sp)
+            // Campo de texto para la contraseña
+            CampoTextoConContrasena(
+                value = password,
+                onValueChange = {
+                    password = it
+                    errorMensaje = ""
+                },
+                placeholder = "Contraseña",
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Rounded.Lock,
+                        contentDescription = null
                     )
                 }
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Boton(
-                    text = "Iniciar Sesión",
-                    onClick = {
-                        cargando = true
-                        inicioSesionFirebase.loginWithEmail(email, password)
-                            .onEach { response ->
-                                when (response) {
-                                    is InicioSesionFirebase.AuthResponse.Success -> {
-                                        val uid = response.uid
-                                        ConexionPersona().obtenerUsuarioPorUID(uid) { usuario ->
-                                            if (usuario != null) {
-                                                usuarioLogeado.usuarioActual = usuario
-                                                navController.navigate("VentanaInicio") {
-                                                    popUpTo(0) { inclusive = true }
-                                                }
-                                            } else {
-                                                errorMensaje = "Error al cargar datos del usuario."
-                                                cargando = false
-                                            }
-                                        }
-                                    }
-
-                                    is InicioSesionFirebase.AuthResponse.Error -> {
-                                        errorMensaje = response.messaje
-                                        cargando = false
-                                    }
-                                }
-                            }
-                            .launchIn(coroutineScope)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextoInteractivo(
-                    texto = "Crear cuenta",
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    onClick = { navController.navigate("VentanaRegistrar") }
+            // Mensaje de error
+            if (errorMensaje.isNotEmpty()) {
+                Text(
+                    text = errorMensaje,
+                    color = ColorError,
+                    style = TextStyle(fontSize = 14.sp)
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Botón de inicio de sesión
+            Boton(
+                text = "Iniciar Sesión",
+                onClick = {
+                    inicioSesionFirebase.loginWithEmail(email, password)
+                        .onEach { response ->
+                            when (response) {
+                                is InicioSesionFirebase.AuthResponse.Success -> {
+                                    val uid = response.uid
+                                    ConexionPersona().obtenerUsuarioPorUID(uid) { usuario ->
+                                        if (usuario != null) {
+                                            usuarioLogeado.usuarioActual = usuario
+                                            navController.navigate("VentanaInicio") {
+                                                popUpTo(0) { inclusive = true }
+                                            }
+                                        } else {
+                                            errorMensaje = "Error al cargar datos del usuario."
+                                        }
+                                    }
+                                }
+
+                                is InicioSesionFirebase.AuthResponse.Error -> {
+                                    errorMensaje = response.messaje
+                                }
+                            }
+                        }
+                        .launchIn(coroutineScope)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Texto interactivo para registrarse
+            TextoInteractivo(
+                texto = "Crear cuenta",
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = { navController.navigate("VentanaRegistrar") }
+            )
         }
     }
 }

@@ -6,20 +6,20 @@ import android.widget.DatePicker
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.DateRange
@@ -34,10 +34,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -55,15 +55,15 @@ import com.example.fitcraft.ui.NavegadorVentanas
 import com.example.fitcraft.ui.components.Boton
 import com.example.fitcraft.ui.components.CampoTexto
 import com.example.fitcraft.ui.components.CampoTextoConContrasena
-import com.example.fitcraft.ui.components.DividerConEspaciado
+import com.example.fitcraft.ui.components.DividerConLinea
 import com.example.fitcraft.ui.components.TextoCentrado
 import com.example.fitcraft.ui.components.TextoInteractivo
 import com.example.fitcraft.ui.theme.ColorError
-import com.example.fitcraft.ui.theme.ColorFondo
-import com.example.fitcraft.ui.theme.ColorFondoSecundario
 import com.example.fitcraft.ui.theme.ColorTexto
 import com.example.fitcraft.ui.theme.ColorTitulo
 import com.example.fitcraft.ui.theme.FitCraftTheme
+import com.example.fitcraft.ui.theme.modifierBox
+import com.example.fitcraft.ui.theme.modifierColumna
 import com.example.fitcraft.viewmodel.DatosRutina
 import com.example.fitcraft.viewmodel.UsuarioLogeado
 import java.util.Calendar
@@ -90,15 +90,15 @@ class VentanaSecundaria : ComponentActivity() {
 internal fun Registrar(navController: NavController) {
     val conexionPersona = ConexionPersona()
 
-    var nombre by remember { mutableStateOf("") }
-    var apellidos by remember { mutableStateOf("") }
-    var fechaNacimiento by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var auxAltura by remember { mutableStateOf("") }
-    var auxPeso by remember { mutableStateOf("") }
-    var nombreUsuario by remember { mutableStateOf("") }
-    var contrasena by remember { mutableStateOf("") }
-    var errorMensaje by remember { mutableStateOf("") }
+    var nombre by rememberSaveable { mutableStateOf("") }
+    var apellidos by rememberSaveable { mutableStateOf("") }
+    var fechaNacimiento by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var auxAltura by rememberSaveable { mutableStateOf("") }
+    var auxPeso by rememberSaveable { mutableStateOf("") }
+    var nombreUsuario by rememberSaveable { mutableStateOf("") }
+    var contrasena by rememberSaveable { mutableStateOf("") }
+    var errorMensaje by rememberSaveable { mutableStateOf("") }
 
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
@@ -114,17 +114,12 @@ internal fun Registrar(navController: NavController) {
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(ColorFondo),
+        modifierBox,
         contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .clip(RoundedCornerShape(50.dp))
-                .background(ColorFondoSecundario)
-                .padding(30.dp)
+            modifier = modifierColumna
+                .verticalScroll(rememberScrollState())
         ) {
             TextoCentrado(
                 text = stringResource(id = R.string.app_name),
@@ -178,7 +173,7 @@ internal fun Registrar(navController: NavController) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            DividerConEspaciado()
+            DividerConLinea()
 
             CampoTexto(
                 value = email,
@@ -199,7 +194,7 @@ internal fun Registrar(navController: NavController) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            DividerConEspaciado()
+            DividerConLinea()
 
             OutlinedTextField(
                 value = fechaNacimiento,
@@ -226,7 +221,7 @@ internal fun Registrar(navController: NavController) {
             )
 
 
-            DividerConEspaciado()
+            DividerConLinea()
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -247,7 +242,8 @@ internal fun Registrar(navController: NavController) {
                             modifier = Modifier.size(24.dp)
                         )
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    numerico = true
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 CampoTexto(
@@ -264,11 +260,12 @@ internal fun Registrar(navController: NavController) {
                             modifier = Modifier.size(24.dp)
                         )
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    numerico = true
                 )
             }
 
-            DividerConEspaciado()
+            DividerConLinea()
 
             CampoTexto(
                 value = nombreUsuario,
@@ -287,7 +284,7 @@ internal fun Registrar(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            DividerConEspaciado()
+            DividerConLinea()
 
             CampoTextoConContrasena(
                 value = contrasena,
@@ -301,7 +298,7 @@ internal fun Registrar(navController: NavController) {
                 }
             )
 
-            DividerConEspaciado()
+            DividerConLinea()
 
             Boton(
                 text = "Crear cuenta",
@@ -309,7 +306,7 @@ internal fun Registrar(navController: NavController) {
                     val altura = auxAltura.toFloatOrNull() ?: 0f
                     val peso = auxPeso.toFloatOrNull() ?: 0f
 
-                    if (validarEntrada(
+                    if (conexionPersona.validarRegistro(
                             nombre,
                             apellidos,
                             fechaNacimiento,
@@ -340,7 +337,9 @@ internal fun Registrar(navController: NavController) {
                     } else {
                         errorMensaje = "Por favor, llena todos los campos correctamente."
                     }
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
             )
 
             if (errorMensaje.isNotEmpty()) {
@@ -364,18 +363,3 @@ internal fun Registrar(navController: NavController) {
 }
 
 
-fun validarEntrada(
-    nombre: String,
-    apellidos: String,
-    email: String,
-    fechaNacimiento: String,
-    altura: Float,
-    peso: Float,
-    nombreUsuario: String,
-    contrasena: String
-): Boolean {
-    return nombre.isNotEmpty() && apellidos.isNotEmpty() &&
-            fechaNacimiento.isNotEmpty() && email.isNotEmpty() && altura > 0 &&
-            peso > 0 && nombreUsuario.isNotEmpty() &&
-            contrasena.isNotEmpty()
-}

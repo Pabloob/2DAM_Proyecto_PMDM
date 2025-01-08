@@ -11,23 +11,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.fitcraft.data.firebase.ConexionPersona
-import com.example.fitcraft.data.model.Usuario
 import com.example.fitcraft.ui.components.CampoTexto
 import com.example.fitcraft.ui.components.ClickableRow
 import com.example.fitcraft.ui.components.PanelNavegacionInferior
@@ -41,27 +40,13 @@ import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
-    val conexionPersona =
-        remember { ConexionPersona() }
+    val conexionPersona = remember { ConexionPersona() }
     val context = LocalContext.current
 
-    // Inicializamos las variables con el usuario actual
     val usuarioActual = usuarioLogeado.usuarioActual
-    var nombreUsuario by remember { mutableStateOf(usuarioActual?.nombreUsuario ?: "") }
-    var auxAltura by remember { mutableStateOf(usuarioActual?.altura?.toString() ?: "") }
-    var auxPeso by remember { mutableStateOf(usuarioActual?.peso?.toString() ?: "") }
-
-    LaunchedEffect(usuarioActual) {
-        // Si hay un usuario logueado, cargar sus datos
-        usuarioActual?.let { usuario ->
-            conexionPersona.obtenerUsuarioPorNombre(usuario.nombreUsuario) { persona ->
-                persona?.let {
-                    auxAltura = it.altura.toString()
-                    auxPeso = it.peso.toString()
-                }
-            }
-        }
-    }
+    var auxNombreUsuario by rememberSaveable { mutableStateOf(usuarioActual?.nombreUsuario ?: "") }
+    var auxAltura by rememberSaveable { mutableStateOf(usuarioActual?.altura?.toString() ?: "") }
+    var auxPeso by rememberSaveable { mutableStateOf(usuarioActual?.peso?.toString() ?: "") }
 
     Box(
         modifier = Modifier
@@ -73,6 +58,7 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                 .padding(top = 40.dp)
                 .fillMaxWidth(0.9f)
                 .align(Alignment.TopCenter)
+                .verticalScroll(rememberScrollState())
         ) {
             TextoCentrado("Ajustes", color = ColorTitulo)
 
@@ -90,12 +76,13 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                         .padding(vertical = 8.dp)
                 ) {
                     CampoTexto(
-                        value = nombreUsuario,
-                        onValueChange = { nombreUsuario = it },
-                        placeholder = "Nombre",
+                        value = auxNombreUsuario,
+                        onValueChange = { auxNombreUsuario = it },
+                        placeholder = "Nombre de usuario",
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -105,10 +92,12 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                     CampoTexto(
                         value = auxPeso,
                         onValueChange = { auxPeso = it },
-                        placeholder = "Peso",
-                        modifier = Modifier.fillMaxWidth()
+                        placeholder = "Peso (kg)",
+                        modifier = Modifier.fillMaxWidth(),
+                        numerico = true
                     )
                 }
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -118,19 +107,57 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                     CampoTexto(
                         value = auxAltura,
                         onValueChange = { auxAltura = it },
-                        placeholder = "Altura",
-                        modifier = Modifier.fillMaxWidth()
+                        placeholder = "Altura (cm)",
+                        modifier = Modifier.fillMaxWidth(),
+                        numerico = true
                     )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
                 ClickableRow(
+                    text = "Guardar cambios",
+                    color = ColorTitulo,
+                    onClick = {
+                        if (auxAltura.toFloatOrNull() != null && auxPeso.toFloatOrNull() != null) {
+                            usuarioActual?.let { usuario ->
+                                usuario.nombreUsuario = auxNombreUsuario
+                                usuario.altura = auxAltura.toFloat()
+                                usuario.peso = auxPeso.toFloat()
+
+                                // Actualizar en Firebase
+                                conexionPersona.actualizarUsuario(usuario) { exito ->
+                                    if (exito) {
+                                        Toast.makeText(
+                                            context,
+                                            "Cambios guardados",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Error al guardar los cambios",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Altura y peso deben ser valores numéricos",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                )
+
+                ClickableRow(
                     text = "Cerrar sesión",
                     color = ColorError,
                     onClick = {
-                        FirebaseAuth.getInstance().signOut() // Cierra sesión en Firebase
-                        usuarioLogeado.cerrarSesion() // Limpia los datos persistentes
+                        FirebaseAuth.getInstance().signOut()
+                        usuarioLogeado.cerrarSesion()
 
                         // Limpia la sesión local
                         val sharedPreferences =
@@ -164,7 +191,6 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                                         apply()
                                     }
 
-                                    // Redirige a la pantalla de inicio de sesión
                                     Toast.makeText(context, "Cuenta eliminada", Toast.LENGTH_SHORT)
                                         .show()
                                     navController.navigate("VentanaIniciarSesion") {
@@ -181,7 +207,6 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                         }
                     }
                 )
-
             }
         }
 

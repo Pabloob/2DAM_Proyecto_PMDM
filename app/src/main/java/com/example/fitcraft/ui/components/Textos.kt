@@ -18,7 +18,6 @@ import com.example.fitcraft.ui.theme.TitleTextStyle
 fun TextoCentrado(
     text: String,
     style: TextStyle = TitleTextStyle,
-    modifier: Modifier = Modifier,
     color: Color
 ) {
     Row(
@@ -27,7 +26,7 @@ fun TextoCentrado(
             .fillMaxWidth()
             .padding(bottom = 40.dp)
     ) {
-        Text(text = text, style = style, modifier = modifier, color = color)
+        Text(text = text, style = style, color = color)
     }
 }
 
