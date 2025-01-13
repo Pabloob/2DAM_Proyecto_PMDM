@@ -27,13 +27,16 @@ import com.example.fitcraft.viewmodel.DatosRutina
 
 @Composable
 fun MostrarEjercicios(navController: NavController, datosRutina: DatosRutina) {
+    // Lista de ejercicios, inicializada vacía
     val ejercicios = remember { mutableStateListOf<Ejercicio>() }
+    // Referencia a la clase de conexión con Firebase para ejercicios
     val conexionEjercicio = ConexionEjercicio()
 
+    // Efecto para cargar los ejercicios al entrar a la pantalla
     LaunchedEffect(Unit) {
         conexionEjercicio.cargarEjercicios { lista ->
-            ejercicios.clear()
-            ejercicios.addAll(lista)
+            ejercicios.clear()  // Limpiar lista anterior
+            ejercicios.addAll(lista)  // Agregar nuevos ejercicios a la lista
         }
     }
 
@@ -41,9 +44,10 @@ fun MostrarEjercicios(navController: NavController, datosRutina: DatosRutina) {
         modifierBox
     ) {
         Box(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)  // Contenedor para los ejercicios
         ) {
             if (ejercicios.isEmpty()) {
+                // Mensaje de carga si no hay ejercicios disponibles
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -51,26 +55,29 @@ fun MostrarEjercicios(navController: NavController, datosRutina: DatosRutina) {
                     TextoCentrado("Cargando ejercicios...", color = ColorTexto)
                 }
             } else {
+                // Mostrar lista de ejercicios cargados
                 Column(
                     modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
                     ejercicios.forEach { ejercicio ->
+                        // Panel para cada ejercicio con opción de agregar a la rutina
                         PanelRutinaSimple(
                             ejercicio = ejercicio,
                             onClick = {
-                                datosRutina.ejercicios.add(ejercicio)
-                                navController.popBackStack()
+                                datosRutina.ejercicios.add(ejercicio)  // Agregar ejercicio a la rutina
+                                navController.popBackStack()  // Volver a la pantalla anterior
                             }
                         )
-                        DividerConLinea()
+                        DividerConLinea()  // Divisor entre ejercicios
                     }
                 }
             }
         }
+        // Botón para cancelar y regresar
         Boton(
             text = "Cancelar",
             onClick = {
-                navController.popBackStack()
+                navController.popBackStack()  // Regresar a la pantalla anterior
             },
             modifier = Modifier
                 .fillMaxWidth()

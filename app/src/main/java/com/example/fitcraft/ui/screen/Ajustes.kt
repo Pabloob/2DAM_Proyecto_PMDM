@@ -3,23 +3,12 @@ package com.example.fitcraft.ui.screen
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,32 +16,31 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.fitcraft.data.firebase.ConexionPersona
-import com.example.fitcraft.ui.components.CampoTexto
-import com.example.fitcraft.ui.components.ClickableRow
-import com.example.fitcraft.ui.components.PanelNavegacionInferior
-import com.example.fitcraft.ui.components.TextoCentrado
-import com.example.fitcraft.ui.theme.ColorError
-import com.example.fitcraft.ui.theme.ColorFondo
-import com.example.fitcraft.ui.theme.ColorFondoSecundario
-import com.example.fitcraft.ui.theme.ColorTitulo
+import com.example.fitcraft.ui.components.*
+import com.example.fitcraft.ui.theme.*
 import com.example.fitcraft.viewmodel.UsuarioLogeado
 import com.google.firebase.auth.FirebaseAuth
 
+// Composición principal de la pantalla Ajustes
 @Composable
 fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
+    // Creación de instancia de ConexionPersona para operaciones de Firebase
     val conexionPersona = remember { ConexionPersona() }
     val context = LocalContext.current
 
+    // Estado para manejar cambios en los datos del usuario
     val usuarioActual = usuarioLogeado.usuarioActual
     var auxNombreUsuario by rememberSaveable { mutableStateOf(usuarioActual?.nombreUsuario ?: "") }
     var auxAltura by rememberSaveable { mutableStateOf(usuarioActual?.altura?.toString() ?: "") }
     var auxPeso by rememberSaveable { mutableStateOf(usuarioActual?.peso?.toString() ?: "") }
 
+    // Caja principal que ocupa toda la pantalla y tiene fondo
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(ColorFondo)
     ) {
+        // Contenedor principal con scroll vertical
         Column(
             modifier = Modifier
                 .padding(top = 40.dp)
@@ -60,8 +48,10 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                 .align(Alignment.TopCenter)
                 .verticalScroll(rememberScrollState())
         ) {
+            // Título centrado "Ajustes"
             TextoCentrado("Ajustes", color = ColorTitulo)
 
+            // Contenedor secundario con forma redondeada y fondo secundario
             Column(
                 modifier = Modifier
                     .padding(top = 30.dp)
@@ -69,6 +59,7 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                     .background(ColorFondoSecundario)
                     .padding(20.dp)
             ) {
+                // Fila para editar nombre de usuario
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -83,6 +74,7 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                     )
                 }
 
+                // Fila para editar peso
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -98,6 +90,7 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                     )
                 }
 
+                // Fila para editar altura
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -113,19 +106,21 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                     )
                 }
 
+                // Espaciado entre filas
                 Spacer(modifier = Modifier.height(10.dp))
 
+                // Fila para guardar cambios
                 ClickableRow(
                     text = "Guardar cambios",
                     color = ColorTitulo,
                     onClick = {
-                        if (auxAltura.toFloatOrNull() != null && auxPeso.toFloatOrNull() != null) {
+                        if (auxAltura.toFloatOrNull() != null && auxPeso.toFloatOrNull() != null && auxAltura.toFloat() > 0 && auxPeso.toFloat() > 0) {
                             usuarioActual?.let { usuario ->
                                 usuario.nombreUsuario = auxNombreUsuario
                                 usuario.altura = auxAltura.toFloat()
                                 usuario.peso = auxPeso.toFloat()
 
-                                // Actualizar en Firebase
+                                // Actualizar usuario en Firebase
                                 conexionPersona.actualizarUsuario(usuario) { exito ->
                                     if (exito) {
                                         Toast.makeText(
@@ -143,23 +138,26 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                                 }
                             }
                         } else {
+                            // Mostrar mensaje si la validación falla
                             Toast.makeText(
                                 context,
-                                "Altura y peso deben ser valores numéricos",
+                                "Error al guardar los cambios",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
                     }
                 )
 
+                // Fila para cerrar sesión
                 ClickableRow(
                     text = "Cerrar sesión",
                     color = ColorError,
                     onClick = {
+                        // Cerrar sesión en Firebase
                         FirebaseAuth.getInstance().signOut()
                         usuarioLogeado.cerrarSesion()
 
-                        // Limpia la sesión local
+                        // Limpiar sesión local
                         val sharedPreferences =
                             context.getSharedPreferences("FitCraftPrefs", Context.MODE_PRIVATE)
                         with(sharedPreferences.edit()) {
@@ -167,13 +165,14 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                             apply()
                         }
 
-                        // Redirige a la pantalla de inicio de sesión
+                        // Redirigir a la pantalla de inicio de sesión
                         navController.navigate("VentanaIniciarSesion") {
                             popUpTo(0) { inclusive = true }
                         }
                     }
                 )
 
+                // Fila para borrar cuenta
                 ClickableRow(
                     text = "Borrar cuenta",
                     color = ColorError,
@@ -210,6 +209,7 @@ fun Ajustes(navController: NavController, usuarioLogeado: UsuarioLogeado) {
             }
         }
 
+        // Panel inferior para navegación
         PanelNavegacionInferior(
             navController = navController,
             modifier = Modifier.align(Alignment.BottomEnd)

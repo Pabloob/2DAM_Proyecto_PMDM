@@ -50,15 +50,17 @@ import com.example.fitcraft.viewmodel.UsuarioLogeado
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
+// Actividad principal que contiene la lógica de inicio de sesión
 class VentanaPrincipal : ComponentActivity() {
-    private val usuarioLogeado: UsuarioLogeado by viewModels()
-    private val datosRutina: DatosRutina by viewModels()
+    private val usuarioLogeado: UsuarioLogeado by viewModels()  // ViewModel para manejo del usuario logeado
+    private val datosRutina: DatosRutina by viewModels()  // ViewModel para manejo de datos de rutina
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val navController = rememberNavController()
+            val navController = rememberNavController()  // Controlador de navegación
 
+            // Navegador que maneja las diferentes pantallas
             NavegadorVentanas(
                 navController,
                 usuarioLogeado,
@@ -70,21 +72,25 @@ class VentanaPrincipal : ComponentActivity() {
 
 @Composable
 fun IniciarSesion(navController: NavController, usuarioLogeado: UsuarioLogeado) {
+    // Variables de estado para email y contraseña
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var errorMensaje by rememberSaveable { mutableStateOf("") }
 
+    // Inicialización del inicio de sesión con Firebase
     val inicioSesionFirebase = remember { InicioSesionFirebase() }
     val coroutineScope = rememberCoroutineScope()
 
+    // Caja contenedora para centrar elementos
     Box(
         modifierBox,
         contentAlignment = Alignment.Center,
     ) {
         Column(
             modifierColumna
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState()),  // Contenedor principal con scroll
         ) {
+            // Título centralizado
             TextoCentrado(
                 text = stringResource(id = R.string.app_name),
                 style = TextStyle(
@@ -96,12 +102,12 @@ fun IniciarSesion(navController: NavController, usuarioLogeado: UsuarioLogeado) 
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de texto para el email
+            // Campo para el email
             CampoTexto(
                 value = email,
                 onValueChange = {
-                    email = it
-                    errorMensaje = ""
+                    email = it  // Actualiza el estado del email
+                    errorMensaje = ""  // Limpia el mensaje de error
                 },
                 placeholder = "E-mail",
                 leadingIcon = {
@@ -112,12 +118,12 @@ fun IniciarSesion(navController: NavController, usuarioLogeado: UsuarioLogeado) 
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Campo de texto para la contraseña
+            // Campo para la contraseña
             CampoTextoConContrasena(
                 value = password,
                 onValueChange = {
-                    password = it
-                    errorMensaje = ""
+                    password = it  // Actualiza el estado de la contraseña
+                    errorMensaje = ""  // Limpia el mensaje de error
                 },
                 placeholder = "Contraseña",
                 leadingIcon = {
@@ -130,7 +136,7 @@ fun IniciarSesion(navController: NavController, usuarioLogeado: UsuarioLogeado) 
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Mensaje de error
+            // Muestra mensaje de error si existe
             if (errorMensaje.isNotEmpty()) {
                 Text(
                     text = errorMensaje,
@@ -161,9 +167,8 @@ fun IniciarSesion(navController: NavController, usuarioLogeado: UsuarioLogeado) 
                                         }
                                     }
                                 }
-
                                 is InicioSesionFirebase.AuthResponse.Error -> {
-                                    errorMensaje = response.messaje
+                                    errorMensaje = "Error al iniciar sesión" // Muestra mensaje de error en caso de fallo
                                 }
                             }
                         }
@@ -175,7 +180,7 @@ fun IniciarSesion(navController: NavController, usuarioLogeado: UsuarioLogeado) 
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Texto interactivo para registrarse
+            // Texto interactivo para redirigir al registro
             TextoInteractivo(
                 texto = "Crear cuenta",
                 modifier = Modifier.align(Alignment.CenterHorizontally),

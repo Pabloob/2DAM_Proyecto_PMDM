@@ -1,13 +1,13 @@
 package com.example.fitcraft.data.model
 
-data class Usuario(
-    var idPersona: Int = 0,
-    var nombre: String = "",
-    var apellidos: String = "",
-    var nombreUsuario: String = "",
-    var email: String = "",
-    var contrasena: String = "",
-    var altura: Float = 0f,
-    var peso: Float = 0f,
-    var fechaNacimiento: String = ""
+data class Usuario(  // Clase que representa un usuario
+    var idPersona: Int = 0,  // ID único del usuario
+    var nombre: String = "",  // Nombre del usuario
+    var apellidos: String = "",  // Apellidos del usuario
+    var nombreUsuario: String = "",  // Nombre de usuario
+    var email: String = "",  // Correo electrónico del usuario
+    var contrasena: String = "",  // Contraseña del usuario
+    var altura: Float = 0f,  // Altura del usuario en flotante
+    var peso: Float = 0f,  // Peso del usuario en flotante
+    var fechaNacimiento: String = ""  // Fecha de nacimiento del usuario
 )

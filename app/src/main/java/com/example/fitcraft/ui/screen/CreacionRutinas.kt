@@ -69,17 +69,20 @@ class VentanaCrearRutina : ComponentActivity() {
 
 @Composable
 fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRutina: DatosRutina) {
+    // Estado para manejar mensajes de error
     var errorMensaje by rememberSaveable { mutableStateOf("") }
+    // Referencia a la clase de conexión con Firebase para rutinas
     val conexionRutinas = ConexionRutina()
 
     Box(
         modifierBox,
         contentAlignment = Alignment.Center
     ) {
+        // Contenido principal dentro de una columna scrollable
         Column(
             modifierColumna.verticalScroll(rememberScrollState())
-
         ) {
+            // Título centrado
             TextoCentrado("Crear Rutina", color = ColorTitulo)
 
             Spacer(Modifier.height(16.dp))
@@ -123,7 +126,7 @@ fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRuti
 
             Spacer(Modifier.height(16.dp))
 
-            // Selección de horas
+            // Selección de horas (Inicio y Fin)
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
@@ -145,6 +148,7 @@ fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRuti
 
             Spacer(Modifier.height(16.dp))
 
+            // Muestra cada ejercicio añadido a la rutina
             datosRutina.ejercicios.forEach { ejercicio ->
                 val valoresEjercicio =
                     datosRutina.datosEjercicio[ejercicio] ?: EjercicioValores("", "", "")
@@ -168,9 +172,6 @@ fun CrearRutina(navController: NavController, usuario: UsuarioLogeado, datosRuti
                     }
                 )
             }
-
-
-
 
             Spacer(Modifier.height(16.dp))
 

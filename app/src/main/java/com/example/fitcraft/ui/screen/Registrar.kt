@@ -33,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -68,9 +67,11 @@ import com.example.fitcraft.viewmodel.DatosRutina
 import com.example.fitcraft.viewmodel.UsuarioLogeado
 import java.util.Calendar
 
+// VentanaSecundaria es una actividad de Android que inicializa la navegación mediante Compose.
 class VentanaSecundaria : ComponentActivity() {
     private val usuarioLogeado: UsuarioLogeado by viewModels()
     private val datosRutina: DatosRutina by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -79,7 +80,7 @@ class VentanaSecundaria : ComponentActivity() {
                 NavegadorVentanas(
                     navHostController = navController,
                     usuarioLogeado = usuarioLogeado,
-                    datosRutina,
+                    datosRutina
                 )
             }
         }
@@ -90,6 +91,7 @@ class VentanaSecundaria : ComponentActivity() {
 internal fun Registrar(navController: NavController) {
     val conexionPersona = ConexionPersona()
 
+    // Estados para los campos de entrada del formulario.
     var nombre by rememberSaveable { mutableStateOf("") }
     var apellidos by rememberSaveable { mutableStateOf("") }
     var fechaNacimiento by rememberSaveable { mutableStateOf("") }
@@ -103,6 +105,7 @@ internal fun Registrar(navController: NavController) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
+    // Dialogo para seleccionar fecha de nacimiento.
     val datePickerDialog = DatePickerDialog(
         context,
         { _: DatePicker, year: Int, month: Int, day: Int ->
@@ -113,6 +116,7 @@ internal fun Registrar(navController: NavController) {
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
+    // Contenedor principal
     Box(
         modifierBox,
         contentAlignment = Alignment.Center
@@ -121,6 +125,7 @@ internal fun Registrar(navController: NavController) {
             modifier = modifierColumna
                 .verticalScroll(rememberScrollState())
         ) {
+            // Título de la pantalla
             TextoCentrado(
                 text = stringResource(id = R.string.app_name),
                 style = TextStyle(
@@ -130,6 +135,7 @@ internal fun Registrar(navController: NavController) {
                 color = ColorTitulo
             )
 
+            // Campos de entrada: Nombre y Apellidos
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -173,8 +179,10 @@ internal fun Registrar(navController: NavController) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            // Divider horizontal
             DividerConLinea()
 
+            // Campo de correo electrónico
             CampoTexto(
                 value = email,
                 onValueChange = {
@@ -194,8 +202,10 @@ internal fun Registrar(navController: NavController) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            // Divider horizontal
             DividerConLinea()
 
+            // Campo para seleccionar fecha de nacimiento
             OutlinedTextField(
                 value = fechaNacimiento,
                 onValueChange = {},
@@ -220,9 +230,9 @@ internal fun Registrar(navController: NavController) {
                 )
             )
 
-
             DividerConLinea()
 
+            // Campos de Altura y Peso
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -267,6 +277,7 @@ internal fun Registrar(navController: NavController) {
 
             DividerConLinea()
 
+            // Campo para Nombre de Usuario
             CampoTexto(
                 value = nombreUsuario,
                 onValueChange = {
@@ -286,6 +297,7 @@ internal fun Registrar(navController: NavController) {
 
             DividerConLinea()
 
+            // Campo para la Contraseña
             CampoTextoConContrasena(
                 value = contrasena,
                 onValueChange = { contrasena = it },
@@ -300,6 +312,7 @@ internal fun Registrar(navController: NavController) {
 
             DividerConLinea()
 
+            // Botón para crear cuenta
             Boton(
                 text = "Crear cuenta",
                 onClick = {
@@ -342,6 +355,7 @@ internal fun Registrar(navController: NavController) {
                     .fillMaxWidth()
             )
 
+            // Mensaje de error si hay alguno
             if (errorMensaje.isNotEmpty()) {
                 Text(
                     text = errorMensaje,
@@ -353,6 +367,7 @@ internal fun Registrar(navController: NavController) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Texto interactivo para iniciar sesión
             TextoInteractivo(
                 texto = "Iniciar sesión",
                 modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -361,5 +376,3 @@ internal fun Registrar(navController: NavController) {
         }
     }
 }
-
-

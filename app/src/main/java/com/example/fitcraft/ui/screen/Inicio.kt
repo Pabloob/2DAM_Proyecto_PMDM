@@ -26,11 +26,16 @@ import com.example.fitcraft.viewmodel.UsuarioLogeado
 
 @Composable
 fun Inicio(navController: NavController, usuarioLogeado: UsuarioLogeado) {
+    // Datos del usuario actual
     val usuarioActual = usuarioLogeado.usuarioActual
+    // Estado que indica si se está cargando datos
     val cargando by usuarioLogeado.cargando
+    // Rutina del día asociada al usuario
     val rutinaDelDia by usuarioLogeado.rutinaDelDia
+    // Datos para el gráfico de progreso
     val lineData by usuarioLogeado.lineData
 
+    // Efecto para inicializar los datos del usuario
     LaunchedEffect(usuarioActual) {
         if (usuarioActual != null) {
             usuarioLogeado.inicializarUsuario(usuarioActual.idPersona) {
@@ -40,6 +45,7 @@ fun Inicio(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                 }
             }
         } else {
+            // Si no hay usuario actual, navegar al inicio de sesión
             navController.navigate("VentanaIniciarSesion") {
                 popUpTo(0) { inclusive = true }
             }
@@ -47,7 +53,7 @@ fun Inicio(navController: NavController, usuarioLogeado: UsuarioLogeado) {
     }
 
     if (cargando) {
-        // Pantalla de carga mientras se obtienen los datos
+        // Mostrar pantalla de carga mientras se obtienen los datos
         Box(
             modifierBox,
             contentAlignment = Alignment.Center
@@ -55,7 +61,7 @@ fun Inicio(navController: NavController, usuarioLogeado: UsuarioLogeado) {
             CircularProgressIndicator(color = ColorTitulo)
         }
     } else {
-        // Interfaz principal
+        // Mostrar la interfaz principal
         Box(
             modifierBox
         ) {
@@ -65,18 +71,17 @@ fun Inicio(navController: NavController, usuarioLogeado: UsuarioLogeado) {
                     .fillMaxWidth(0.9f)
                     .align(Alignment.TopCenter)
                     .verticalScroll(rememberScrollState())
-
             ) {
-                // Mensaje de bienvenida
+                // Saludo con el nombre del usuario
                 TextoCentrado("Bienvenido ${usuarioActual?.nombreUsuario}", color = ColorTitulo)
                 Spacer(modifier = Modifier.height(30.dp))
 
-                // Panel con la rutina del día
+                // Mostrar panel con la rutina del día
                 PanelRutinaSimple(rutina = rutinaDelDia)
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // Gráfico de progreso (mostrar solo si los datos están listos)
+                // Mostrar gráfico de progreso solo si hay datos disponibles
                 lineData?.let { LineChartComponent(it) }
             }
 

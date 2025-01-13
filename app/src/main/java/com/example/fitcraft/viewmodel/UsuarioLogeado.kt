@@ -10,15 +10,17 @@ import com.example.fitcraft.data.model.Usuario
 import com.example.fitcraft.ui.components.createLineData
 import com.github.mikephil.charting.data.LineData
 
+// ViewModel para manejar el estado del usuario logueado y sus rutinas
 class UsuarioLogeado : ViewModel() {
-    var usuarioActual by mutableStateOf<Usuario?>(null)
-    var rutinaDelDia = mutableStateOf<Rutina?>(null)
-    var rutinasUsuario = mutableStateOf<List<Rutina>>(emptyList())
-    var lineData = mutableStateOf<LineData?>(null)
-    var cargando = mutableStateOf(true)
+    var usuarioActual by mutableStateOf<Usuario?>(null)             // Usuario actualmente autenticado
+    var rutinaDelDia = mutableStateOf<Rutina?>(null)               // Rutina del día
+    var rutinasUsuario = mutableStateOf<List<Rutina>>(emptyList()) // Lista de todas las rutinas del usuario
+    var lineData = mutableStateOf<LineData?>(null)                 // Datos para gráfico de líneas
+    var cargando = mutableStateOf(true)                           // Estado de carga
 
-    private val conexionRutina = ConexionRutina()
+    private val conexionRutina = ConexionRutina()                  // Conexión a Firebase para rutinas
 
+    // Inicializa los datos del usuario y carga rutinas y gráficos
     fun inicializarUsuario(idPersona: Int, onError: () -> Unit) {
         cargando.value = true
 
@@ -35,6 +37,7 @@ class UsuarioLogeado : ViewModel() {
         }
     }
 
+    // Función para cerrar sesión y limpiar datos
     fun cerrarSesion() {
         usuarioActual = null
         rutinaDelDia.value = null

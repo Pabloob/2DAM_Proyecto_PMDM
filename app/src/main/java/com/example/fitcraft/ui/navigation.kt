@@ -24,16 +24,19 @@ import com.example.fitcraft.viewmodel.DatosRutina
 import com.example.fitcraft.viewmodel.UsuarioLogeado
 import com.google.firebase.auth.FirebaseAuth
 
+// Objetivo de la clase Routes: Definir las rutas/nombres de las pantallas
 object Routes {
-    const val IniciarSesion = "VentanaIniciarSesion"
-    const val Registrar = "VentanaRegistrar"
-    const val Inicio = "VentanaInicio"
-    const val Ejercicios = "VentanaEjercicios"
-    const val CrearRutina = "VentanaCrearRutina"
-    const val MisRutinas = "VentanaMisRutinas"
-    const val Ajustes = "VentanaAjustes"
+    const val IniciarSesion = "VentanaIniciarSesion" // Ruta para iniciar sesión
+    const val Registrar = "VentanaRegistrar"       // Ruta para registro de usuarios
+    const val Inicio = "VentanaInicio"             // Ruta para la pantalla principal
+    const val Ejercicios = "VentanaEjercicios"     // Ruta para mostrar ejercicios
+    const val CrearRutina = "VentanaCrearRutina"   // Ruta para crear rutinas
+    const val MisRutinas = "VentanaMisRutinas"     // Ruta para gestionar rutinas del usuario
+    const val Ajustes =
+        "VentanaAjustes"           // Ruta para la configuración o ajustes del usuario
 }
 
+// Componente principal que gestiona la navegación entre pantallas
 @Composable
 fun NavegadorVentanas(
     navHostController: NavHostController,
@@ -45,6 +48,7 @@ fun NavegadorVentanas(
     val isLoggedIn = remember { mutableStateOf(firebaseAuth.currentUser != null) }
     val cargando = remember { mutableStateOf(true) }
 
+    // Escucha los cambios en el estado de autenticación de Firebase
     LaunchedEffect(Unit) {
         firebaseAuth.addAuthStateListener { auth ->
             val currentUser = auth.currentUser
@@ -54,7 +58,7 @@ fun NavegadorVentanas(
                     if (usuario != null) {
                         usuarioLogeado.usuarioActual = usuario
                     } else {
-                        firebaseAuth.signOut()
+                        firebaseAuth.signOut() // Si usuario no encontrado, cerrar sesión
                         isLoggedIn.value = false
                     }
                     cargando.value = false
@@ -66,6 +70,7 @@ fun NavegadorVentanas(
         }
     }
 
+    // Mostrar indicador de carga mientras se procesa la autenticación
     if (cargando.value) {
         Box(
             modifierBox,
@@ -74,18 +79,24 @@ fun NavegadorVentanas(
             CircularProgressIndicator()
         }
     } else {
+        // Determinar la pantalla inicial basándose en si está o no autenticado
         val startDestination = if (isLoggedIn.value) Routes.Inicio else Routes.IniciarSesion
 
         NavHost(
             navController = navHostController,
             startDestination = startDestination
         ) {
-            addAuthScreens(navHostController, usuarioLogeado)
-            addMainScreens(navHostController, usuarioLogeado, datosRutina)
+            addAuthScreens(navHostController, usuarioLogeado) // Agregar pantallas de autenticación
+            addMainScreens(
+                navHostController,
+                usuarioLogeado,
+                datosRutina
+            ) // Agregar pantallas principales
         }
     }
 }
 
+// Agregar pantallas relacionadas con autenticación (Iniciar sesión y Registro)
 private fun NavGraphBuilder.addAuthScreens(
     navController: NavHostController,
     usuarioLogeado: UsuarioLogeado
@@ -94,6 +105,7 @@ private fun NavGraphBuilder.addAuthScreens(
     composable(Routes.Registrar) { Registrar(navController) }
 }
 
+// Agregar pantallas principales como Inicio, Ejercicios, Crear Rutina, etc.
 private fun NavGraphBuilder.addMainScreens(
     navController: NavHostController,
     usuarioLogeado: UsuarioLogeado,
